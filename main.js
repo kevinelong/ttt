@@ -13,16 +13,10 @@ var Position = /** @class */ (function () {
     }
     return Position;
 }());
-var Line = /** @class */ (function () {
-    function Line() {
-    }
-    return Line;
-}());
 var Board = /** @class */ (function () {
     function Board(size) {
         if (size === void 0) { size = 3; }
         this.positions = [];
-        this.lines = [];
         this.winner = "";
         this.size = size;
         for (var y = 0; y < size; y++) {

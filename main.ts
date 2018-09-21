@@ -20,15 +20,10 @@ class Position {
     }
 }
 
-class Line {
-    positions: Array<Position>;
-}
-
 class Board {
 
     positions: Array<Position> = [];
     size: number;
-    lines: Array<Line> = [];
     winner: string = "";
 
     constructor(size: number = 3) {

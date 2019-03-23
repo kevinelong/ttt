@@ -102,6 +102,7 @@ class Board {
         }
 
         let keys = Object.keys(counts);
+
         for (let k = 0; k < keys.length; k++) {
             if (counts[keys[k]] === 3) {
                 this.setWinner(keys[k]);

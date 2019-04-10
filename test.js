@@ -33,3 +33,23 @@ g3.board.render();
 g3.board.add(2, 2, new Token('o'));
 g3.board.render();
 
+let g4 = new Game(19,5);
+
+g4.board.add(2, 2, new Token('o'));
+g4.board.render();
+
+g4.board.add(3, 2, new Token('o'));
+g4.board.render();
+
+g4.board.add(4, 2, new Token('x'));
+g4.board.render();
+
+g4.board.add(5, 2, new Token('o'));
+g4.board.render();
+
+g4.board.add(6, 2, new Token('o'));
+g4.board.render();
+
+g4.board.add(4, 2, new Token('o'));
+g4.board.render();
+

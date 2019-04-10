@@ -184,8 +184,8 @@ class Game {
     lines = [];
     board: Board;
 
-    constructor(size: number = 3) {
-        this.board = new Board(size);
+    constructor(size: number = 3, goal: number = 2) {
+        this.board = new Board(size, goal);
         this.lines = [];
     }
 }

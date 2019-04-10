@@ -135,10 +135,11 @@ var Board = /** @class */ (function () {
     return Board;
 }());
 var Game = /** @class */ (function () {
-    function Game(size) {
+    function Game(size, goal) {
         if (size === void 0) { size = 3; }
+        if (goal === void 0) { goal = 2; }
         this.lines = [];
-        this.board = new Board(size);
+        this.board = new Board(size, goal);
         this.lines = [];
     }
     return Game;

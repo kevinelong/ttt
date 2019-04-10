@@ -12,28 +12,88 @@ class Position {
     x: number;
     y: number;
     token: Token;
+    neighbors: Array<Position>;
 
-    constructor(x: number, y: number, token: Token = new Token(".")) {
+    constructor(
+        x: number,
+        y: number,
+        token: Token = new Token("."),
+        neighbors: Array<Position> = []
+    ) {
         this.x = x;
         this.y = y;
         this.token = token;
+        this.neighbors = neighbors;
     }
 }
+
+
+class Direction {
+    x: number;
+    y: number;
+    name: string;
+
+    constructor(name, x, y) {
+        this.name = name;
+        this.x = x;
+        this.y = y;
+    }
+}
+
+// CARDINAL DIRECTIONS STARTING WITH NORTH GOING CLOCKWISE
+let DIRECTIONS = function (): Array<Direction> {
+
+    const CC = 0;  // CENTER
+    const UP = -1; // UP
+    const RT = 1; // RIGHT
+    const DN = 1; // DOWN
+    const LT = -1; // LEFT
+
+    return [
+        new Direction('n-', CC, UP),
+        new Direction('ne', RT, UP),
+        new Direction('e-', RT, CC),
+        new Direction('se', RT, DN),
+        new Direction('s-', CC, DN),
+        new Direction('sw', LT, DN),
+        new Direction('w-', LT, CC),
+        new Direction('nw', LT, UP)
+    ];
+}();
 
 class Board {
 
     positions: Array<Position> = [];
     size: number;
     winner: string = "";
+    goal: number;
 
-    constructor(size: number = 3) {
+    constructor(size: number = 3, goal = 3) {
         this.size = size;
+        this.goal = goal;
+        this.createPositions();
+        this.createNeighbors();
+    }
 
-        for (let y = 0; y < size; y++) {
-            for (let x = 0; x < size; x++) {
-                this.positions.push(new Position(x, y));
+    createPositions() {
+        for (let y = 0; y < this.size; y++) {
+            for (let x = 0; x < this.size; x++) {
+                let p = new Position(x, y);
+                this.positions.push(p);
             }
         }
+    }
+
+    createNeighbors() {
+        this.positions.map((p) => {
+            DIRECTIONS.map((d) => {
+                let n = this.getPosition(
+                    p.x + d.x,
+                    p.y + d.y
+                );
+                p.neighbors.push(n);
+            });
+        });
     }
 
     setWinner(value) {
@@ -43,109 +103,14 @@ class Board {
     }
 
     getPosition(x: number, y: number) {
-        let p = this.positions[x + (y * this.size)];
-        return p;
-    }
-
-    checkDiagonal1() {
-
-        let counts = {"x": 0, "o": 0};
-
-        for (let x = 0; x < this.size; x++) {
-            let p = this.getPosition(x, x);
-            if (p.token.symbol != ".") {
-                counts[p.token.symbol]++;
-            }
+        if (x < 0 || y < 0 || x >= this.size || y >= this.size) {
+            return undefined;
         }
-
-
-        let keys = Object.keys(counts);
-        for (let k = 0; k < keys.length; k++) {
-            if (counts[keys[k]] === 3) {
-                this.setWinner(keys[k]);
-                return;
-            }
-        }
-    }
-
-
-    checkDiagonal2() {
-
-        let counts = {"x": 0, "o": 0};
-
-        for (let x = 0; x < this.size; x++) {
-            let p = this.getPosition(this.size - x - 1, x);
-            if (p.token.symbol != ".") {
-                counts[p.token.symbol]++;
-            }
-        }
-
-        let keys = Object.keys(counts);
-        for (let k = 0; k < keys.length; k++) {
-            if (counts[keys[k]] === 3) {
-                this.setWinner(keys[k]);
-                return;
-            }
-        }
-
-    }
-
-    checkColumn(n: number) {
-
-        let counts = {"x": 0, "o": 0};
-
-        for (let y = 0; y < this.size; y++) {
-            let p = this.getPosition(n, y);
-            if (p.token.symbol != ".") {
-                counts[p.token.symbol]++;
-            }
-        }
-
-        let keys = Object.keys(counts);
-
-        for (let k = 0; k < keys.length; k++) {
-            if (counts[keys[k]] === 3) {
-                this.setWinner(keys[k]);
-                return;
-            }
-        }
-
-    }
-
-    checkRow(n: number) {
-
-        let counts = {"x": 0, "o": 0};
-
-        for (let x = 0; x < this.size; x++) {
-            let p = this.getPosition(x, n);
-            if (p.token.symbol != ".") {
-                counts[p.token.symbol]++;
-            }
-        }
-
-        let keys = Object.keys(counts);
-        for (let k = 0; k < keys.length; k++) {
-            if (counts[keys[k]] === 3) {
-                this.setWinner(keys[k]);
-                return;
-            }
-        }
-
-    }
-
-    whoHasWon() {
-
-        this.checkDiagonal1();
-
-        this.checkDiagonal2();
-
-        for (let n = 0; n < this.size; n++) {
-            this.checkRow(n);
-            this.checkColumn(n);
-        }
+        return this.positions[x + (y * this.size)];
     }
 
     toString() {
+
         let output = [];
 
         for (let y = 0; y < this.size; y++) {
@@ -156,7 +121,7 @@ class Board {
             output.push('\n');
         }
 
-        if (this.winner != "" && this.winner != ".") {
+        if (this.winner != undefined && this.winner != "" && this.winner != ".") {
             output.push(this.winner + " has won the game!")
         }
 
@@ -164,15 +129,54 @@ class Board {
     }
 
     render() {
-        console.log(this.toString());
+
+        let output = this.toString();
+
+        if (window && window.document && window.document.body) {
+            let p = document.createElement('pre');
+            p.innerHTML = output;
+            window.document.body.appendChild(p);
+        } else {
+            console.log(output);
+        }
+    }
+
+    static sameInDirection(p, direction) {
+
+        let next = p.neighbors[direction];
+        let count = 0;
+
+        while (next != undefined && next.token.symbol == p.token.symbol) {
+            count++;
+            next = next.neighbors[direction];
+        }
+        return count;
+
+    }
+
+    evaluateWin(p) {
+
+        let half = Math.floor(DIRECTIONS.length / 2);
+
+        for (let i = 0; i < half; i++) {
+            let opposite = i + half;
+            let count = 1;
+            count += Board.sameInDirection(p, i);
+            count += Board.sameInDirection(p, opposite);
+            if (count >= this.goal) {
+                this.setWinner(p.token.symbol);
+                return;
+            }
+        }
+
     }
 
     add(x: number, y: number, token: Token) {
         let p = this.getPosition(x, y);
         p.token = token;
-
-        this.whoHasWon();
+        this.evaluateWin(p);
     }
+
 }
 
 class Game {
@@ -185,38 +189,3 @@ class Game {
         this.lines = [];
     }
 }
-
-let g = new Game();
-
-g.board.add(0, 0, new Token('x'));
-g.board.render();
-
-g.board.add(1, 1, new Token('x'));
-g.board.render();
-
-g.board.add(2, 2, new Token('x'));
-g.board.render();
-
-
-let g2 = new Game();
-
-g2.board.add(2, 0, new Token('x'));
-g2.board.render();
-
-g2.board.add(1, 1, new Token('x'));
-g2.board.render();
-
-g2.board.add(0, 2, new Token('x'));
-g2.board.render();
-
-let g3 = new Game();
-
-g3.board.add(0, 2, new Token('o'));
-g3.board.render();
-
-g3.board.add(1, 2, new Token('o'));
-g3.board.render();
-
-g3.board.add(2, 2, new Token('o'));
-g3.board.render();
-

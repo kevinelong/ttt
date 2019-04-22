@@ -1,13 +1,13 @@
-declare function require(name: string);
-
 import * as fs from "fs"
 import * as http from "http"
 
 class Site {
 
     routes: object;
+    port: number;
 
     constructor(routes: object = {}, port: number = 8181) {
+        this.port = port;
         this.routes = {
             ...routes,
             'GET': {
@@ -16,14 +16,16 @@ class Site {
                 ...routes["GET"]
             }
         };
-        http.createServer(this.handleRequest).listen(port);
     }
+
+    listen = () => {
+        http.createServer(this.handleRequest).listen(this.port);
+    };
 
     handleRequest = (req, res) => {
         let base = Site.getBase(req.url);
         try {
             let f = this.routes[req.method][base];
-            debugger;
             f(req, res);
         } catch (e) {
             console.log(`No Route Defined for method '${req.method}' and path '${base}'`);

@@ -8,7 +8,77 @@
 Index
 </body>
 <script>
-'http:localhost:8181/game'
+
+    //FROM MDN
+    function postData(url = ``, data = {}) {
+        // Default options are marked with *
+        return fetch(url, {
+            method: "POST", // *GET, POST, PUT, DELETE, etc.
+            mode: "cors", // no-cors, cors, *same-origin
+            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: "same-origin", // include, *same-origin, omit
+            headers: {
+                "Content-Type": "application/json",
+                // "Content-Type": "application/x-www-form-urlencoded",
+            },
+            redirect: "follow", // manual, *follow, error
+            referrer: "no-referrer", // no-referrer, *client
+            body: JSON.stringify(data), // body data type must match "Content-Type" header
+        })
+            .then(response => response.json()); // parses JSON response into native Javascript objects
+    }
+
+    let Action = (action, data) => { return {action, ...data};};
+
+    function onClickPosition(p) {
+        p.innerHTML = 'z'; //In Process "Spinner"
+        postData('/game/', Action('add', {
+            'x': this.dataset.x,
+            'y': this.dataset.y
+        }) ).then(updatePosition)
+    }
+
+    function updatePosition(data){
+        let s = document.getElementById('status');
+        let d = document.getElementById(`p_${data.x}_${data.y}`);
+        s.innerHTML = data.status;
+        d.innerHTML = data.symbol;
+    }
+
+    function createPosition(data, o, i) {
+        let d = document.createElement("div");
+        d.innerHTML = o;
+        d.style.display = 'inline-block';
+        d.style.textAlign = 'center';
+        d.style.border = '0px solid silver';
+        d.style.minWidth = '22px';
+        d.style.minHeight = '22px';
+        d.dataset.x = i % data.size;
+        d.dataset.y = Math.floor(i / data.size).toString();
+        d.setAttribute('id',`p_${d.dataset.x}_${d.dataset.y}`);
+
+        d.onclick = onClickPosition;
+        return d;
+    }
+
+    function draw(data) {;
+        let s = document.createElement("div");
+        let b = document.createElement("div");
+        data.board.map((o, i) => {
+            b.appendChild(createPosition(data, o, i));
+            if ((i + 1) % data.size == 0) {
+                b.appendChild(document.createElement('br'));
+            }
+        });
+
+        s.setAttribute("id","status");
+        s.innerHTML = data.status;
+
+        document.body.appendChild(s);
+        document.body.appendChild(b);
+    }
+
+    fetch('http://127.0.0.1:8181/game/').then((r) => r.json()).then(draw);
 </script>
 <!--<script src="main.js"></script>-->
 <!--<script src="test.js"></script>-->

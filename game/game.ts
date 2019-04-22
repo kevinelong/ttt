@@ -8,11 +8,13 @@ class Game {
     lines: Array<Position> = [];
 
     board: Board;
-    goal: Number;
-    size: Number;
+    goal: number;
+    size: number;
+    status: string;
     DIRECTIONS: Array<Direction>;
 
     constructor(size: number = 3, goal: number = 2) {
+        this.status = "Game Begins";
         this.size = size;
         this.goal = goal;
         this.board = new Board(size);
@@ -29,19 +31,24 @@ class Game {
             let count = 1;
             count += Board.sameInDirection(p, i);
             count += Board.sameInDirection(p, opposite);
+
             if (count >= this.goal) {
                 this.board.setWinner(p.token.symbol);
+                this.status = `Winner: '${p.token.symbol}'.`;
+
                 return;
             }
         }
 
     }
 
-    add(x: number, y: number, symbol: string) {
+    add(x: number, y: number, symbol: string = 'x') {
+        this.status = `Token Placed at x='${x}', y='${y}'.`;
         let token = new Token(symbol);
         this.board.add(x, y, token);
         let p = this.board.getPosition(x, y);
         this.evaluateWin(p);
+        return symbol;
     }
 
     render() {
@@ -49,7 +56,7 @@ class Game {
     }
 
     getState() {
-        return `{"size":"${this.size}","board":${this.board.toJSON()}}`;
+        return `{"status":"${this.status}","size":"${this.size}","board":${this.board.toJSON()}}`;
     }
 }
 

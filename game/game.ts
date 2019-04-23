@@ -11,11 +11,13 @@ class Game {
     goal: number;
     size: number;
     status: string;
+    current: string;
     DIRECTIONS: Array<Direction>;
 
     constructor(size: number = 3, goal: number = 2) {
         this.status = "Game Begins";
         this.size = size;
+        this.current = 'x';
         this.goal = goal;
         this.board = new Board(size);
         this.lines = [];
@@ -42,12 +44,18 @@ class Game {
 
     }
 
-    add(x: number, y: number, symbol: string = 'x') {
-        this.status = `Token Placed at x='${x}', y='${y}'.`;
+    toggle(){
+        this.current = this.current === 'x' ? 'o' : 'x';
+    }
+
+    add(x: number, y: number, symbol: string = this.current) {
         let token = new Token(symbol);
         this.board.add(x, y, token);
         let p = this.board.getPosition(x, y);
+        this.toggle();
+        this.status = `Token Placed at x='${x}', y='${y}'. '${this.current}' to play`;
         this.evaluateWin(p);
+
         return symbol;
     }
 
@@ -56,7 +64,14 @@ class Game {
     }
 
     getState() {
-        return `{"status":"${this.status}","size":"${this.size}","board":${this.board.toJSON()}}`;
+        let s = this.getStateSummary();
+        s['board'] = this.board.toArray();
+        let j = JSON.stringify(s);
+        return j;
+    }
+
+    getStateSummary() {
+        return {status: this.status, size: this.size, current: this.current};
     }
 }
 

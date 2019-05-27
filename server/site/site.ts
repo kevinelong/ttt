@@ -5,14 +5,17 @@ class Site {
 
     routes: object;
     port: number;
+    path: string;
 
-    constructor(routes: object = {}, port: number = 8181) {
+    constructor(routes: object = {}, port: number = 80, path = "./client/") {
         this.port = port;
+        this.path = path;
         this.routes = {
             ...routes,
             'GET': {
                 '': this.page,
                 '/': this.page,
+                'index.html': this.page,
                 ...routes["GET"]
             }
         };
@@ -22,20 +25,36 @@ class Site {
         http.createServer(this.handleRequest).listen(this.port);
     };
 
+    routeError = (req, base) => {
+        console.log(`No Route Defined for method '${req.method}' and path '${base}'`);
+    };
+
     handleRequest = (req, res) => {
         let base = Site.getBase(req.url);
+
         try {
-            let f = this.routes[req.method][base];
-            f(req, res);
+            let G = this.routes[req.method];
+            let B = G.hasOwnProperty(base);
+            if (this.routes.hasOwnProperty(req.method) && B) {
+                G[base](req, res);
+            } else if (req.method === 'GET') {
+                this.page(req, res, base);
+            } else {
+                this.routeError(req, base);
+            }
         } catch (e) {
-            console.log(`No Route Defined for method '${req.method}' and path '${base}'`);
+            this.routeError(req, base);
         }
     };
 
-    page = (req, res) => {
-        fs.readFile('index.html', 'utf8', function (err, contents) {
+    page = (req, res, base = 'index.html') => {
+        fs.readFile(this.path + base, 'utf8', function (err, contents) {
             res.writeHead(200, {'Content-Type': 'text/html'});
-            res.write(contents);
+            if(err === null) {
+                res.write(contents);
+            }else{
+                res.write(err.message);
+            }
             res.end();
         });
     };

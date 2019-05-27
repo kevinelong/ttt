@@ -73,10 +73,10 @@ class Board {
     toArray() {
         return this.positions.map((p)=>{return p.token.symbol});
     }
-
-    toJSON() {
-        return JSON.stringify(this.toArray());
-    }
+    //
+    // toJSON() {
+    //     return JSON.stringify(this.toArray());
+    // }
 
     render() {
 

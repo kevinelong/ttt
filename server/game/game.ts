@@ -60,6 +60,7 @@ class Game {
     }
 
     render() {
+        console.log(this.status);
         this.board.render();
     }
 

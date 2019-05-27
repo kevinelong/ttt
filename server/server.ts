@@ -1,4 +1,3 @@
-
 import {Game} from "./game/game";
 import {Site} from "./site/site";
 
@@ -55,6 +54,5 @@ let site = new Site({
         '/game/': (q, r) => handlePost(q, r, handleAction)
     }
 });
+
 site.listen();
-
-
